@@ -9,6 +9,7 @@ local nextAttTime = 0
 local horizontalMove = 0
 local lastState = 0
 local status = nil
+local currentLure = nil
 
 local fishing_data = {
     fish                   = { weight = 0, rodweight },
@@ -50,58 +51,59 @@ local fishs = {
 
 RegisterNetEvent('rsg-fishing:client:usebait')
 AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
-Citizen.CreateThread(function()
+CreateThread(function()
         Citizen.InvokeNative(0x1096603B519C905F, "MMFSH")
-        prepareMyPrompt()    
+        prepareMyPrompt()
         fishing = true
         local sleep = 1500
         currentLure = UsableBait
         UsableBait = nil
         ready = false
-        local weapon = Citizen.InvokeNative(0x8425C5F057012DAB, PlayerPedId())
-        local weaponName = Citizen.InvokeNative(0x89CF5FF3D363311E, weapon, Citizen.ResultAsString())
-        if weaponName ~= "WEAPON_FISHINGROD" then
+        local weapon = GetPedCurrentHeldWeapon(cache.ped)
+        local weaponName = GetWeaponName(weapon)
+        print(weapon, weaponName)
+
+        if weaponName ~= 'WEAPON_FISHINGROD' then
             lib.notify({ title = 'Error', description = Lang:t('error.you_need_use_your_fishing_rod_first'), type = 'error', duration = 7000 })
             return
         end
+
         TriggerServerEvent('rsg-fishing:server:removeBaitItem', currentLure)
+
         while fishing do
             Wait(0)
             GET_TASK_FISHING_DATA()
             if FISHING_GET_MINIGAME_STATE() == 1 and ready == false then
-                ready = true  
-                if Config.Debug then
-                    print("Current bait: "..currentLure)
-                end
-                TaskSwapFishingBait(PlayerPedId(), currentLure, 0)    
-                Citizen.InvokeNative(0x9B0C7FA063E67629, PlayerPedId(), currentLure, 0, 1)
+                ready = true
+                if Config.Debug then print("Current bait: "..currentLure) end
+                TaskSwapFishingBait(cache.ped, currentLure, 0)
+                SetFishingBait(cache.ped, currentLure, 0, 1)
             end
 
             if hasMinigameOn then
                 sleep = 4
-                local playerPed = PlayerPedId()
 
                 if FISHING_GET_MINIGAME_STATE() == 2 then
                     FISHING_GET_MAX_THROWING_DISTANCE(math.random(25.0, 30.0))
                 end
 
                 if FISHING_GET_MINIGAME_STATE() == 6 then
-                                
+
                     if IsControlJustPressed(0, 0x8FFC75D6) then
                         FISHING_SET_F_(6, 128)
                     end
-                    
+
                     local bobberPosition = FISHING_GET_BOBBER_HANDLE()
 
                     local hookHandle = FISHING_GET_HOOK_HANDLE()
                     local hookPosition = GetEntityCoords(hookHandle)
                     local lured = false
-                    
+
                     if IsControlPressed(0, GetHashKey("INPUT_DUCK")) then
                         local actualReelSpeed = Config.ReelSpeed
-                        local playerCoords = GetEntityCoords(PlayerPedId(), true, true)
+                        local playerCoords = GetEntityCoords(cache.ped, true, true)
                         distance = playerCoords - hookPosition
-                        
+
                         distance = hookPosition + distance * actualReelSpeed
                         SetEntityCoords(hookHandle, distance.x, distance.y, distance.z, false, false, false, false)                    
                     end
@@ -112,7 +114,7 @@ Citizen.CreateThread(function()
                         FISHING_SET_F_(14, 0.4)
                     end
 
-                    local fishHandle                    
+                    local fishHandle
                     for _, f in pairs(GetNearbyFishs(hookPosition, 50.0)) do
                         local fishPosition = GetEntityCoords(f)
                         if Config.Debug then
@@ -132,7 +134,7 @@ Citizen.CreateThread(function()
                                 lured = true
                             end
                         end
-                    end                                        
+                    end
 
                     if lured then
                         fishing_lure_cooldown = GetGameTimer() + (1 * 1000)
@@ -146,12 +148,12 @@ Citizen.CreateThread(function()
 
                                 SetPedConfigFlag(fishHandle, 17, true)
 
-                                Citizen.InvokeNative(0x1F298C7BD30D1240, playerPed)
+                                Citizen.InvokeNative(0x1F298C7BD30D1240, cache.ped)
 
                                 ClearPedTasksImmediately(fishHandle, false, true)
                                 TaskSetBlockingOfNonTemporaryEvents(fishHandle, true)
 
-                                Citizen.InvokeNative(0x1A52076D26E09004, playerPed, fishHandle)
+                                PedFishingrodHookEntity(cache.ped, fishHandle)
 
                                 FISHING_SET_FISH_HANDLE(fishHandle)
                                 fishForce = 0.6
@@ -205,13 +207,13 @@ Citizen.CreateThread(function()
 
                             local r = exports["rsg-fishing"]:VERTICAL_PROBE(x, y,  z, 1)
                             local valid, height = r[1], r[2]
-                                                        
+
                         -- import from ptfx on rsg-fishing c# version
                         local particlecoords = GetEntityCoords(fishHandle)
                         RequestNamedPtfxAsset(GetHashKey('scr_mg_fishing'))
                             while not HasNamedPtfxAssetLoaded(GetHashKey('scr_mg_fishing')) do
                                 Wait(5)
-                            end                        
+                            end
                         UseParticleFxAsset("scr_mg_fishing")
                         local Fisheffect = StartParticleFxNonLoopedAtCoord("scr_mg_fish_struggle", particlecoords, 0.0, 0.0, math.random(0, 360) + 0.0001, 1.5, 0, 0, 0)
                         SetParticleFxLoopedAlpha(Fisheffect, 1.0)
@@ -242,14 +244,14 @@ Citizen.CreateThread(function()
                                 fishForce = 0.8
                             end
                         end
-                        TaskSmartFleeCoord(fishHandle, GetEntityCoords(playerPed), 40.0, 50, 8, 1077936128)
-                                                
+                        TaskSmartFleeCoord(fishHandle, GetEntityCoords(cache.ped), 40.0, 50, 8, 1077936128)
+
                          -- import from ptfx on rsg-fishing c# version
                         local particlecoords = GetEntityCoords(fishHandle)
                         RequestNamedPtfxAsset(GetHashKey('scr_mg_fishing'))
                             while not HasNamedPtfxAssetLoaded(GetHashKey('scr_mg_fishing')) do
                                 Wait(5)
-                            end                        
+                            end
                         UseParticleFxAsset("scr_mg_fishing")
                         local Fisheffect = StartParticleFxNonLoopedAtCoord("scr_mg_fish_struggle", particlecoords, 0.0, 0.0, math.random(0, 360) + 0.0001, 1.5, 0, 0, 0)
                         SetParticleFxLoopedAlpha(Fisheffect, 1.0)
@@ -257,7 +259,7 @@ Citizen.CreateThread(function()
                     else
                         if IsControlJustPressed(0, GetHashKey("INPUT_GAME_MENU_OPTION")) or (IsControlPressed(0, GetHashKey("INPUT_GAME_MENU_OPTION")) and GetGameTimer() % 25 == 0) then
                             FISHING_SET_ROD_WEIGHT(4)
-                            TaskGoToEntity(fishHandle, playerPed, Config.Difficulty, 1.0, 1.5, 0.0, 0)
+                            TaskGoToEntity(fishHandle, cache.ped, Config.Difficulty, 1.0, 1.5, 0.0, 0)
                         end
 
                         if IsControlJustReleased(0, GetHashKey("INPUT_GAME_MENU_OPTION")) then
@@ -292,7 +294,7 @@ Citizen.CreateThread(function()
                             SetEntityAsMissionEntity(entity, true, true)
                             Wait(3000)
                             DeleteEntity(entity)
-                            Citizen.InvokeNative(0x9B0C7FA063E67629, PlayerPedId(), "", 0, 1)
+                            SetFishingBait(cache.ped, "", 0, 1)
                         end
                     end
 
@@ -302,7 +304,7 @@ Citizen.CreateThread(function()
                             status = "throw"
                             local entity = FISHING_GET_FISH_HANDLE()
                             local fishModel = GetEntityModel(entity)
-                            Citizen.InvokeNative(0x9B0C7FA063E67629, PlayerPedId(), "", 0, 1)
+                            SetFishingBait(cache.ped, "", 0, 1)
                             FISHING_SET_TRANSITION_FLAG(64)
                             SetEntityAsMissionEntity(entity, true, true)
                             Wait(3000)
@@ -312,7 +314,7 @@ Citizen.CreateThread(function()
 
                     if FISHING_GET_F_(5) == 96 and FISHING_GET_F_(6) == 0 then
                         fishing = false
-                        Citizen.InvokeNative(0x9B0C7FA063E67629, PlayerPedId(), "", 0, 1)                        
+                        SetFishingBait(cache.ped, "", 0, 1)
                         local entity = FISHING_GET_FISH_HANDLE()
                         SetEntityAsMissionEntity(entity, true, true)
                         Wait(3000)
@@ -322,8 +324,8 @@ Citizen.CreateThread(function()
 
                 if IsControlJustPressed(0, GetHashKey("INPUT_TOGGLE_HOLSTER")) then
                     fishing = false
-                    FISHING_SET_TRANSITION_FLAG(8)                
-                    Citizen.InvokeNative(0x9B0C7FA063E67629, PlayerPedId(), "", 0, 1)
+                    FISHING_SET_TRANSITION_FLAG(8)
+                    SetFishingBait(cache.ped, "", 0, 1)
                 end
             end
             lastState = FISHING_GET_MINIGAME_STATE()
@@ -332,7 +334,7 @@ Citizen.CreateThread(function()
     end)
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
     prepareMyPrompt()
     while true do
         local t = 1000
@@ -703,8 +705,7 @@ local DeleteThis = function(holding)
 
     Wait(500)
 
-    local ped = PlayerPedId()
-    local entitycheck = Citizen.InvokeNative(0xD806CD2A4F2C2996, ped)
+    local entitycheck = GetFirstEntityPedIsCarrying(cache.ped)
     local holdingcheck = GetPedType(entitycheck)
 
     if holdingcheck == 0 then
@@ -720,19 +721,15 @@ CreateThread(function()
         Wait(1000)
 
         local ped = PlayerPedId()
-        local holding = Citizen.InvokeNative(0xD806CD2A4F2C2996, ped)
-        local heldModel = Citizen.InvokeNative(0xDA76A9F39210D365, holding)
-
+        local holding = GetFirstEntityPedIsCarrying(ped)
+        local heldModel = GetEntityModel(holding)
         if holding then
             for k, _ in pairs(Config.fishData) do
                 local model = GetHashKey(k)
-
                 if tonumber(heldModel) == tonumber(model) then
                     local deleted = DeleteThis(holding)
-
                     if deleted then
                         TriggerServerEvent('rsg-fishing:FishToInventory', model, 0)
-
                         break
                     end
                 end
