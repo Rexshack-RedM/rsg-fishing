@@ -61,7 +61,6 @@ CreateThread(function()
         ready = false
         local weapon = GetPedCurrentHeldWeapon(cache.ped)
         local weaponName = GetWeaponName(weapon)
-        print(weapon, weaponName)
 
         if weaponName ~= 'WEAPON_FISHINGROD' then
             lib.notify({ title = 'Error', description = Lang:t('error.you_need_use_your_fishing_rod_first'), type = 'error', duration = 7000 })
