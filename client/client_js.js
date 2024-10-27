@@ -87,7 +87,6 @@ function Int32ToFloat32(num) {
     return view.getFloat32(0);
 }
 
-
 function Float32ToInt32(num) {
     arr = new ArrayBuffer(16); // an Float32 takes 4 bytes
     view = new DataView(arr);
@@ -97,13 +96,11 @@ function Float32ToInt32(num) {
 }
 
 exports('VERTICAL_PROBE', (x, y, z, unkbool) => {
-
     const buffer = new ArrayBuffer(8);
     const view = new DataView(buffer);
 
     // TEST_VERTICAL_PROBE_AGAINST_ALL_WATER
     const r = Citizen.invokeNative("0x2B3451FA1E3142E2", x, y, z, unkbool, view);
-
     const out = new Float32Array(buffer);
 
     return [r, out[0]];
