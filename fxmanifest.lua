@@ -7,9 +7,6 @@ version '1.0.3'
 
 shared_scripts {
     '@ox_lib/init.lua',
-    '@rsg-core/shared/locale.lua',
-    'locales/es.lua',
-    'locales/*.lua',
     'config.lua',
 }
 
@@ -23,7 +20,12 @@ server_scripts {
     'server/versionchecker.lua'
 }
 
+files {
+    'locales/*.json',
+}
+
 dependencies {
+    'rsg-core',
     'ox_lib'
 }
 
