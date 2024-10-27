@@ -62,7 +62,6 @@ AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
         ready = false
         local weapon = GetPedCurrentHeldWeapon(cache.ped)
         local weaponName = GetWeaponName(weapon)
-        print(weapon, weaponName)
 
         if weaponName ~= 'WEAPON_FISHINGROD' then
             lib.notify({ title = locale('cl_error'), description = locale('cl_you_need_use_your_fishing_rod_first'), type = 'error', duration = 7000 })
