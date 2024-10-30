@@ -15,7 +15,7 @@
     "cl_keep_fish": "Mantén el señuelo Pescar",
     "cl_throw_fish": "Arrojar pez",
 
-    "sv_you_got_fish_name": "Conseguiste un %{fish_name}",
+    "sv_you_got_fish_name": "Conseguiste un",
     "sv_discord_b": "Pesca | Atrapado",
     "sv_discord_c": "Atrapaste un "
 }
