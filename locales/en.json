@@ -15,7 +15,7 @@
 "cl_keep_fish" : "Keep Fish",
 "cl_throw_fish" : "Throw Fish",
 
-"sv_you_got_fish_name" : "You got a %{fish_name}",
+"sv_you_got_fish_name" : "You got a",
 "sv_discord_b" : "Fish | Caught",
 "sv_discord_c" : "Caught a "
 }
