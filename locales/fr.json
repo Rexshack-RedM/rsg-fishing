@@ -15,7 +15,7 @@
     "cl_keep_fish": "Garder le poisson",
     "cl_throw_fish": "Jeter le poisson",
 
-    "sv_you_got_fish_name": "Vous avez attrapé un %{fish_name}",
+    "sv_you_got_fish_name": "Vous avez attrapé un",
     "sv_discord_b": "Pêche | Capturé",
     "sv_discord_c": "Vous avez capturé un "
 }
