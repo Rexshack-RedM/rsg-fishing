@@ -167,8 +167,14 @@ AddEventHandler('rsg-fishing:FishToInventory', function(fishModel, weight)
     local fish = fishEntity[fishModel]
     local fish_name = fishNames[fishModel]
     local fish_weight = string.format('%.2f%%', (weight * 54.25)):gsub('%%', '')
+    
+    -- Get the player's character name correctly
+    local charinfo = Player.PlayerData.charinfo
+    local firstname = charinfo.firstname
+    local lastname = charinfo.lastname
+    
     Player.Functions.AddItem(fish, 1, nil, {weight = fish_weight})
     TriggerClientEvent('rsg-inventory:client:ItemBox', src, RSGCore.Shared.Items[fish], 'add', 1)
     TriggerClientEvent('ox_lib:notify', src, {title = locale('sv_you_got_fish_name')..' '..fish_name, type = 'success', duration = 5000 })
-    TriggerEvent('rsg-log:server:CreateLog', 'fishing', locale('sv_discord_b'), 'green', Player.PlayerData.firstname..' '..Player.PlayerData.lastname..' '.. locale('sv_discord_c') ..' '.. fish_weight..'KG '..fish_name)
+    TriggerEvent('rsg-log:server:CreateLog', 'fishing', locale('sv_discord_b'), 'green', firstname..' '..lastname..' '.. locale('sv_discord_c') ..' '.. fish_weight..'KG '..fish_name)
 end)
