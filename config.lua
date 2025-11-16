@@ -1,9 +1,10 @@
 Config = {}
 
 -- settings
-Config.Difficulty = 1250 -- use -1 for testing
-Config.ReelSpeed = 0.0125
+Config.Difficulty = 500 -- use -1 for testing (reduced for easier catches)
+Config.ReelSpeed = 0.025 -- increased reel speed for faster reeling
 Config.Debug = false
+Config.StruggleChance = 0.3 -- fish struggle less frequently (reduced from ~0.2-0.8)
 
 -- fishing baits
 Config.Baits = {
@@ -12,6 +13,7 @@ Config.Baits = {
     "p_baitcheese01x",
     "p_baitcorm01x",
     "p_baitcricket01x",
+    "p_baitworm01x",
     "p_crawdad01x",
     "p_finishedragonfly01x",
     "p_finisdfishlure01x",

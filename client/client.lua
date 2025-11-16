@@ -13,11 +13,11 @@ local currentLure = nil
 lib.locale()
 
 local fishing_data = {
-    fish                   = { weight = 0, rodweight },
-    prompt_prepare_fishing = { group, change_bait, throw_hook },
-    prompt_waiting_hook    = { group, hook_fish, reel_lure, cancel },
-    prompt_hook            = { group, reel, cancel },
-    prompt_finish          = { group, keep, throw_fish }
+    fish                   = { weight = 0, rodweight = 0 },
+    prompt_prepare_fishing = { group = nil, change_bait = nil, throw_hook = nil },
+    prompt_waiting_hook    = { group = nil, hook_fish = nil, reel_lure = nil, cancel = nil },
+    prompt_hook            = { group = nil, reel = nil, cancel = nil },
+    prompt_finish          = { group = nil, keep = nil, throw_fish = nil }
 }
 
 local fishs = {
@@ -84,7 +84,7 @@ AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
                 sleep = 4
 
                 if FISHING_GET_MINIGAME_STATE() == 2 then
-                    FISHING_GET_MAX_THROWING_DISTANCE(math.random(25.0, 30.0))
+                    FISHING_SET_F_(1, math.random(25.0, 30.0))
                 end
 
                 if FISHING_GET_MINIGAME_STATE() == 6 then
@@ -194,13 +194,13 @@ AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
                         FISHING_SET_F_(14, 1.0)
                     end
 
-                    if GetGameTimer() >= nextAttTime then
-                        local probabilidadePuxar = math.random()
-                        if probabilidadePuxar > 0.8 or probabilidadePuxar < 0.2 then -- soltar linha
-                            fishForce = 0.8
-                            tempoPuxando = math.random(2, 5) * 1000
-                            fishStatus = 1 -- agitado
-                            nextAttTime = GetGameTimer() + tempoPuxando
+                     if GetGameTimer() >= nextAttTime then
+                         local probabilidadePuxar = math.random()
+                         if probabilidadePuxar < Config.StruggleChance then -- fish struggles (less frequently)
+                             fishForce = 0.6 -- reduced force required
+                             tempoPuxando = math.random(1, 3) * 1000 -- shorter struggle duration
+                             fishStatus = 1 -- agitated
+                             nextAttTime = GetGameTimer() + tempoPuxando
 
                             local fishHandle = FISHING_GET_FISH_HANDLE()
                             local x,y,z = table.unpack(GetEntityCoords(fishHandle))
@@ -218,11 +218,11 @@ AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
                         local Fisheffect = StartParticleFxNonLoopedAtCoord("scr_mg_fish_struggle", particlecoords, 0.0, 0.0, math.random(0, 360) + 0.0001, 1.5, 0, 0, 0)
                         SetParticleFxLoopedAlpha(Fisheffect, 1.0)
                         else
-                            fishForce = 0
-                            tempoPuxando = math.random(2, 5) * 1000
-                            fishStatus = 0 --rex
-                            nextAttTime = GetGameTimer() + tempoPuxando
-                        end
+                             fishForce = 0
+                             tempoPuxando = math.random(2, 5) * 1000
+                             fishStatus = 0 -- relaxed
+                             nextAttTime = GetGameTimer() + tempoPuxando
+                         end
                     end
 
                     if fishStatus == 1 then
@@ -237,13 +237,13 @@ AddEventHandler('rsg-fishing:client:usebait', function(UsableBait)
                             FISHING_SET_ROD_WEIGHT(2)
                         end
 
-                        if fishForce >= 1.4 then
-                            FISHING_SET_F_(6, 11)
-                        else
-                            if fishForce < 0.8 then
-                                fishForce = 0.8
-                            end
-                        end
+                         if fishForce >= 1.0 then -- reduced threshold for catching
+                             FISHING_SET_F_(6, 11)
+                         else
+                             if fishForce < 0.6 then
+                                 fishForce = 0.6
+                             end
+                         end
                         TaskSmartFleeCoord(fishHandle, GetEntityCoords(cache.ped), 40.0, 50, 8, 1077936128)
 
                          -- import from ptfx on rsg-fishing c# version
@@ -559,11 +559,11 @@ function FishModelToSomeSortOfWeightIndex(fishModel)
         return 11
     elseif fishModel == GetHashKey("A_C_FISHSMALLMOUTHBASS_01_LG") or fishModel == GetHashKey("A_C_FISHSMALLMOUTHBASS_01_MS") then
         return 12
-    elseif fishModel == GetHashKey("A_C_FISHSALMONSOCKEYE_01_MS") or fishModel == GetHashKey("A_C_FISHSALMONSOCKEYE_01_LG") then
-        return 13
-    elseif fishModel == GetHashKey("A_C_FISHRAINBOWTROUT_01_LG") or fishModel == GetHashKey("A_C_FISHRAINBOWTROUT_01_MS") then
-        return 14
-    end
+     elseif fishModel == GetHashKey("A_C_FISHSALMONSOCKEYE_01_MS") or fishModel == GetHashKey("A_C_FISHSALMONSOCKEYE_01_ML") or fishModel == GetHashKey("A_C_FISHSALMONSOCKEYE_01_LG") then
+         return 13
+     elseif fishModel == GetHashKey("A_C_FISHRAINBOWTROUT_01_LG") or fishModel == GetHashKey("A_C_FISHRAINBOWTROUT_01_MS") then
+         return 14
+     end
 end
 
 function GetMinMaxWeightForWeightIndex(index)
