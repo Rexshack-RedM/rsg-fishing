@@ -1,6 +1,6 @@
 # rsg-fishing — Technical Docs
 
-Version 3.0.4. For installation and player instructions see [README.md](README.md).
+Version 3.1.0. For installation and player instructions see [README.md](README.md).
 
 ## Contents
 
@@ -135,5 +135,10 @@ None. The script stores nothing of its own.
 | Line snaps too easily | Lower `Config.LineSnap.Gain` |
 | Fish never bite | The bait must be in `Config.BaitsPerFish` for fish in that water, and a fish has to be within 1.6 of the hook |
 | Fish not added to inventory | Missing fish item in shared items, full inventory, or more than 5 minutes since the bait was used |
+
+## rsg-skills integration
+
+`Config.Skills = { Enabled, Skill, CatchXP }`. On a server-validated catch (`rsg-fishing:server:catchFish`, bait spent, weight above 0) the server calls `exports['rsg-skills']:AddXP(src, Config.Skills.Skill, Config.Skills.CatchXP, 'fishing catch')` when `GetResourceState('rsg-skills') == 'started'`. The XP amount comes from config, never from the client. The `fishing` skill and its perks (`rare_chance`, `sell_bonus`) are defined in rsg-skills; the `sell_bonus` perk is applied by rsg-fishmonger.
+
 
 Support the Project : https://rexshack.tebex.store/
